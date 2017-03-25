@@ -16,7 +16,7 @@ public class NFA {
    
     LinkedList<State> s = new LinkedList<State>();
     Fragment frag;
-    static Stack operatorStack = new Stack();
+    static Stack operatorStack = new Stack();	//to convert regular expression to postfix
 	
  
    //postfix expression to NFA 
@@ -34,15 +34,15 @@ public class NFA {
            switch(ch){
                case '.': lastFragment2 = fragmentStack.pop();
                          lastFragment1 = fragmentStack.pop();
-                         patchFragments(lastFragment1, lastFragment2.getStart());
-                         fragmentStack.push(new Fragment(lastFragment1.getStart(), lastFragment2.getOut() ) );
+                         patchFragments(lastFragment1, lastFragment2.getStart());	//perform concatenation of the two fragments
+                         fragmentStack.push(new Fragment(lastFragment1.getStart(), lastFragment2.getOut() ) );	//push a new fragment with concatenated transition states with out arrow to the stack
                          
                    break;
                
                case '|': lastFragment2 = fragmentStack.pop();
                          lastFragment1 = fragmentStack.pop();
-                         newState = new State(lastFragment1.getStart(), lastFragment2.getStart());
-                         fragmentStack.push(new Fragment(newState, appendArrows(lastFragment1.getOut(), lastFragment2.getOut())));
+                         newState = new State(lastFragment1.getStart(), lastFragment2.getStart());	//create a split with two transition arrows
+                         fragmentStack.push(new Fragment(newState, appendArrows(lastFragment1.getOut(), lastFragment2.getOut())));	//push a new fragment with the new state and the split arrows to the stack
                    break;
                   
                case '*': lastFragment1 = fragmentStack.pop();
@@ -62,12 +62,13 @@ public class NFA {
                    
            }
        }
+	//fragmentStack contains the nfa computed
        FinalNfa = fragmentStack.pop();
        patchFragments(FinalNfa, matchstate);
        return FinalNfa.getStart();
    }
    
-   
+   //patch a fragment with a new 
    private static void patchFragments(Fragment frag, State s){
         ArrayList<State> toBePatched = frag.getOut();
         for (int i = 0; i < toBePatched.size(); i++){
@@ -76,6 +77,7 @@ public class NFA {
         }
     }
 
+	//append the transition arrows of two fragemnts to a single fragment transition arrow list
     private static ArrayList<State> appendArrows(ArrayList<State> a, ArrayList<State> b){
         ArrayList <State> appended = new ArrayList <State> ();
         for (int i = 0; i < a.size(); i++){
@@ -137,7 +139,7 @@ public class NFA {
         
     }
     
-   //assign integers for precedence 
+   //assign integers for operator precedence 
    private static int precedence(char a, char b){
         if(a=='*'||a=='+'){
             if(b=='*'||b=='+')
@@ -177,13 +179,13 @@ public class NFA {
      System.out.println("The expression in postfix is:" + postfix);
      
      State startState = postToNfa(postfix);
-     //inputstring for simulation
+     //input string for simulation
      System.out.println("\nEnter a string for simulation: ");
      String str = keyboard.readLine();
-     
+     //check if input string is match
      Boolean matches = NfaSimulation.match(startState, str);
      if(matches)
-        System.out.println("t's a match");
+        System.out.println("it's a match");
      else
         System.out.println("Not a match");
                        
